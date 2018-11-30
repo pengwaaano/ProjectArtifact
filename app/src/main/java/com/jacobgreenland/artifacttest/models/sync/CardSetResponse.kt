@@ -23,6 +23,18 @@ class CardResponse(var card_id: Int = -1,
                    var large_image: TextResponse,
                    var ingame_image: TextResponse,
                    var hit_points: Int = -1,
+                   var illustrator: String? = null,
+                   var is_green: Boolean = false,
+                   var is_black: Boolean = false,
+                   var is_blue: Boolean = false,
+                   var is_red: Boolean = false,
+                   var sub_type: String? = null,
+                   var rarity: String? = null,
+                   var item_def: Int = -1,
+                   var gold_cost: Int = -1,
+                   var mana_cost: Int = -1,
+                   var attack: Int = -1,
+                   var armour: Int = -1,
                    var references: List<ReferencesResponse>
 )
 
@@ -56,7 +68,9 @@ class TextResponse(var default: String? = null,
                    var latam: String? = null,
                    var vietnamese: String? = null)
 
-class ReferencesResponse()
+class ReferencesResponse(var card_id: Int = -1,
+                         var ref_type: String? = null,
+                         var count: Int = -1)
 
 /*
 "card_set": {
