@@ -2,36 +2,54 @@ package com.jacobgreenland.artifacttest
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
+import com.jacobgreenland.artifacttest.database.RealmDatabase
+import com.jacobgreenland.artifacttest.sync.ModelMapper
 import com.jacobgreenland.artifacttest.sync.artifactService
+import com.jacobgreenland.tcghub_pokemon.di.components.DaggerDatabaseComponent
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import javax.inject.Inject
 
 @SuppressLint("CheckResult")
 class MainActivity : AppCompatActivity() {
+
+    @Inject
+    lateinit var database: RealmDatabase
+
+    var sets = listOf("00", "01")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        artifactService.getSetURL("00")
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { setUrlResponse ->
-                    Log.d("Test", "${setUrlResponse.cdn_root}${setUrlResponse.url}")
+        DaggerDatabaseComponent.create().inject(this)
 
-                    makeCardSetCall("${setUrlResponse.cdn_root}${setUrlResponse.url}")
-                }
+        for (set in sets) {
+            artifactService.getSetURL(set)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe { setUrlResponse ->
+                        Log.d("Test", "${setUrlResponse.cdn_root}${setUrlResponse.url}")
+
+                        makeCardSetCall("${setUrlResponse.cdn_root}${setUrlResponse.url}", setUrlResponse.expire_time)
+                    }
+        }
     }
 
-    private fun makeCardSetCall(url: String) {
+    private fun makeCardSetCall(url: String, expireTime: String) {
         artifactService.getCardSet(url)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe { cardSetResponse ->
-                    Log.d("Test", cardSetResponse.card_set.set_info.name.english)
-                    Log.d("Test", cardSetResponse.card_set.card_list[0].card_name.english)
+                    val set = ModelMapper.responseToSet(cardSetResponse.card_set, expireTime)
+                    val cardList = ModelMapper.responseToCardList(cardSetResponse.card_set)
+
+                    database.realm.executeTransaction {
+                        it.insertOrUpdate(set)
+                        it.insertOrUpdate(cardList)
+                    }
                 }
     }
 }
