@@ -11,6 +11,8 @@ open class Card(
         var cardName: TextObject? = null,
         var cardText: TextObject? = null,
         var miniImage: SimpleTextObject? = null,
+        var setId: Int = -1,
+        var setName: TextObject? = null,
         var largeImage: TextObject? = null,
         var ingameImage: TextObject? = null,
         var hitPoints: Int = -1,

@@ -2,10 +2,7 @@ package com.jacobgreenland.artifacttest.sync
 
 import com.jacobgreenland.artifacttest.models.*
 import com.jacobgreenland.artifacttest.models.Set
-import com.jacobgreenland.artifacttest.models.sync.CardResponse
-import com.jacobgreenland.artifacttest.models.sync.CardSetResponse
-import com.jacobgreenland.artifacttest.models.sync.ReferencesResponse
-import com.jacobgreenland.artifacttest.models.sync.TextResponse
+import com.jacobgreenland.artifacttest.models.sync.*
 import io.realm.RealmList
 import java.util.*
 
@@ -21,12 +18,12 @@ object ModelMapper {
     fun responseToCardList(response: CardSetResponse): List<Card> {
         val list = mutableListOf<Card>()
         response.card_list.forEach {
-            list.add(responseToCard(it))
+            list.add(responseToCard(it, response.set_info))
         }
         return list
     }
 
-    fun responseToCard(response: CardResponse): Card {
+    fun responseToCard(response: CardResponse, setInfo: SetInfoResponse): Card {
         return Card(
                 response.card_id,
                 response.base_card_id,
@@ -34,6 +31,8 @@ object ModelMapper {
                 textResponseToTextObject(response.card_name),
                 textResponseToTextObject(response.card_text),
                 SimpleTextObject(response.mini_image),
+                setInfo.set_id,
+                textResponseToTextObject(setInfo.name),
                 textResponseToTextObject(response.large_image),
                 textResponseToTextObject(response.ingame_image),
                 response.hit_points,
